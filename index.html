@@ -69,7 +69,7 @@
   <!-- Экран 1: старт -->
   <div id="startScreen">
     <h1>HOGWARTS</h1>
-    <p>Нажмите, чтобы начать проверку доступа.</p>
+    <p>Нажмите, чтобы начать работу.</p>
     <button id="startButton">НАЧАТЬ</button>
     <div id="startMessage" class="result" style="display:none;"></div>
   </div>
@@ -93,20 +93,21 @@
     const queryInput = document.getElementById('queryInput');
     const resultOutput = document.getElementById('resultOutput');
 
-    // Telegram инициализация
+    let sessionToken = null;
+
+    // Telegram WebApp init
     if (window.Telegram && window.Telegram.WebApp) {
       Telegram.WebApp.ready();
       Telegram.WebApp.expand();
     }
 
-    // === НАЧАЛО: проверка доступа ===
+    // === Этап 1: Проверка доступа и старт сессии ===
     startButton.addEventListener('click', async () => {
       startButton.disabled = true;
       startMessage.style.display = 'block';
       startMessage.className = 'result';
       startMessage.innerHTML = '🔍 Проверка доступа...';
 
-      // ждем Telegram ID
       let userId = null;
       for (let i = 0; i < 10; i++) {
         userId = Telegram?.WebApp?.initDataUnsafe?.user?.id;
@@ -122,12 +123,13 @@
       }
 
       try {
-        // Проверяем доступ через API поиска (с фиктивным запросом)
-        const res = await fetch(`${API_BASE_URL}/api/search`, {
+        const res = await fetch(`${API_BASE_URL}/api/session/start`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query: 'test', telegram_user_id: userId })
+          body: JSON.stringify({ telegram_user_id: userId })
         });
+
+        const data = await res.json();
 
         if (res.status === 403) {
           startMessage.className = 'error';
@@ -136,14 +138,14 @@
           return;
         }
 
-        if (!res.ok) {
+        if (!res.ok || !data.session_token) {
           startMessage.className = 'error';
-          startMessage.innerHTML = 'Ошибка при проверке доступа.';
+          startMessage.innerHTML = 'Ошибка при создании сессии.';
           startButton.disabled = false;
           return;
         }
 
-        // ✅ если всё ок — переходим к экрану поиска
+        sessionToken = data.session_token;
         startMessage.innerHTML = '✅ Доступ подтверждён.';
         setTimeout(() => {
           startScreen.style.display = 'none';
@@ -158,7 +160,7 @@
       }
     });
 
-    // === ПОИСК ===
+    // === Этап 2: Поиск ===
     searchButton.addEventListener('click', async () => {
       const query = queryInput.value.trim();
       if (!query) {
@@ -174,6 +176,12 @@
         return;
       }
 
+      if (!sessionToken) {
+        resultOutput.className = 'error';
+        resultOutput.innerHTML = '❌ Сессия недействительна. Нажмите НАЧАТЬ заново.';
+        return;
+      }
+
       resultOutput.className = 'result';
       resultOutput.innerHTML = '⏳ Поиск...';
       searchButton.disabled = true;
@@ -182,7 +190,11 @@
         const response = await fetch(`${API_BASE_URL}/api/search`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query: query, telegram_user_id: userId })
+          body: JSON.stringify({
+            query: query,
+            telegram_user_id: userId,
+            session_token: sessionToken
+          })
         });
         const data = await response.json();
 
@@ -191,7 +203,7 @@
           resultOutput.innerHTML = data.result || 'Нет данных.';
         } else if (response.status === 403) {
           resultOutput.className = 'error';
-          resultOutput.innerHTML = `⛔ Доступ запрещён.`;
+          resultOutput.innerHTML = data.error || '⛔ Сессия недействительна. Перезапустите приложение.';
         } else {
           resultOutput.className = 'error';
           resultOutput.innerHTML = `❌ Ошибка сервера: ${data.error || 'Неизвестная ошибка.'}`;
