@@ -83,139 +83,150 @@
   </div>
 
   <script>
-    const API_BASE_URL = "https://test-2-tkqp.onrender.com";
-    let sessionToken = null;
+  const API_BASE_URL = "https://test-2-tkqp.onrender.com";
+  let sessionToken = null;
 
-    const startScreen = document.getElementById('startScreen');
-    const searchScreen = document.getElementById('searchScreen');
-    const startButton = document.getElementById('startButton');
-    const startMessage = document.getElementById('startMessage');
-    const searchButton = document.getElementById('searchButton');
-    const queryInput = document.getElementById('queryInput');
-    const resultOutput = document.getElementById('resultOutput');
+  const startScreen = document.getElementById('startScreen');
+  const searchScreen = document.getElementById('searchScreen');
+  const startButton = document.getElementById('startButton');
+  const startMessage = document.getElementById('startMessage');
+  const searchButton = document.getElementById('searchButton');
+  const queryInput = document.getElementById('queryInput');
+  const resultOutput = document.getElementById('resultOutput');
 
-    // Telegram инициализация
-    if (window.Telegram && window.Telegram.WebApp) {
-      Telegram.WebApp.ready();
-      Telegram.WebApp.expand();
+  // Telegram init
+  if (window.Telegram && window.Telegram.WebApp) {
+    Telegram.WebApp.ready();
+    Telegram.WebApp.expand();
+  }
+
+  // === Функция запуска сессии с кешированием ===
+  async function initSession(userId) {
+    const cached = localStorage.getItem("session_token");
+    const createdAt = localStorage.getItem("session_created");
+
+    // Проверяем, если токен живёт < 1 часа
+    if (cached && createdAt && (Date.now() - parseInt(createdAt)) < 3600 * 1000) {
+      console.log("♻️ Используется сохранённый токен");
+      sessionToken = cached;
+      return cached;
     }
 
-    // === Этап 1: Проверка доступа и запуск сессии ===
-    startButton.addEventListener('click', async () => {
-      startButton.disabled = true;
-      startMessage.style.display = 'block';
-      startMessage.className = 'result';
-      startMessage.innerHTML = '🔍 Проверка доступа...';
-
-      let userId = null;
-      for (let i = 0; i < 10; i++) {
-        userId = Telegram?.WebApp?.initDataUnsafe?.user?.id;
-        if (userId) break;
-        await new Promise(r => setTimeout(r, 400));
-      }
-
-      if (!userId) {
-        startMessage.className = 'error';
-        startMessage.innerHTML = 'Ошибка: не удалось получить ваш Telegram ID.';
-        startButton.disabled = false;
-        return;
-      }
-
-      try {
-        // создаем сессию
-        const res = await fetch(`${API_BASE_URL}/api/session/start`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ telegram_user_id: userId })
-        });
-
-        const data = await res.json();
-
-        if (res.status === 403) {
-          startMessage.className = 'error';
-          startMessage.innerHTML = '⛔ Доступ запрещён. Обратитесь к администратору.';
-          startButton.disabled = false;
-          return;
-        }
-
-        if (!res.ok || !data.session_token) {
-          startMessage.className = 'error';
-          startMessage.innerHTML = 'Ошибка при запуске сессии.';
-          startButton.disabled = false;
-          return;
-        }
-
-        // ✅ сохранили сессию
-        sessionToken = data.session_token;
-        startMessage.innerHTML = '✅ Доступ подтверждён.';
-        setTimeout(() => {
-          startScreen.style.display = 'none';
-          searchScreen.style.display = 'block';
-        }, 700);
-
-      } catch (err) {
-        startMessage.className = 'error';
-        startMessage.innerHTML = '⚠️ Ошибка сети. Попробуйте позже.';
-      } finally {
-        startButton.disabled = false;
-      }
+    // Если нет — создаём новую сессию
+    const res = await fetch(`${API_BASE_URL}/api/session/start`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegram_user_id: userId })
     });
+    const data = await res.json();
 
-    // === Этап 2: Поиск ===
-    searchButton.addEventListener('click', async () => {
-      const query = queryInput.value.trim();
-      if (!query) {
-        resultOutput.className = 'error';
-        resultOutput.innerHTML = 'Введите запрос.';
-        return;
-      }
+    if (!res.ok || !data.session_token) throw new Error(data.error || "Ошибка запуска сессии");
+    
+    localStorage.setItem("session_token", data.session_token);
+    localStorage.setItem("session_created", Date.now().toString());
+    sessionToken = data.session_token;
+    return data.session_token;
+  }
 
-      let userId = Telegram?.WebApp?.initDataUnsafe?.user?.id;
-      if (!userId) {
-        resultOutput.className = 'error';
-        resultOutput.innerHTML = 'Ошибка авторизации.';
-        return;
-      }
+  // === Этап 1: Проверка доступа и запуск ===
+  startButton.addEventListener('click', async () => {
+    startButton.disabled = true;
+    startMessage.style.display = 'block';
+    startMessage.className = 'result';
+    startMessage.innerHTML = '🔍 Проверка доступа...';
 
-      if (!sessionToken) {
-        resultOutput.className = 'error';
-        resultOutput.innerHTML = 'Сессия не активна. Перезапустите Mini App.';
-        return;
-      }
+    let userId = null;
+    for (let i = 0; i < 10; i++) {
+      userId = Telegram?.WebApp?.initDataUnsafe?.user?.id;
+      if (userId) break;
+      await new Promise(r => setTimeout(r, 400));
+    }
 
-      resultOutput.className = 'result';
-      resultOutput.innerHTML = '⏳ Поиск...';
-      searchButton.disabled = true;
+    if (!userId) {
+      startMessage.className = 'error';
+      startMessage.innerHTML = 'Ошибка: не удалось получить Telegram ID.';
+      startButton.disabled = false;
+      return;
+    }
 
+    try {
+      await initSession(userId);
+      startMessage.innerHTML = '✅ Доступ подтверждён.';
+      setTimeout(() => {
+        startScreen.style.display = 'none';
+        searchScreen.style.display = 'block';
+      }, 700);
+    } catch (err) {
+      startMessage.className = 'error';
+      startMessage.innerHTML = '⛔ ' + err.message;
+    } finally {
+      startButton.disabled = false;
+    }
+  });
+
+  // === Этап 2: Поиск ===
+  searchButton.addEventListener('click', async () => {
+    const query = queryInput.value.trim();
+    if (!query) {
+      resultOutput.className = 'error';
+      resultOutput.innerHTML = 'Введите запрос.';
+      return;
+    }
+
+    const userId = Telegram?.WebApp?.initDataUnsafe?.user?.id;
+    if (!userId) {
+      resultOutput.className = 'error';
+      resultOutput.innerHTML = 'Ошибка Telegram ID.';
+      return;
+    }
+
+    // Если токен отсутствует или истёк — перезапускаем
+    if (!sessionToken) {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/search`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            query: query,
-            telegram_user_id: userId,
-            session_token: sessionToken
-          })
-        });
-        const data = await response.json();
-
-        if (response.ok) {
-          resultOutput.className = 'result';
-          resultOutput.innerHTML = data.result || 'Нет данных.';
-        } else if (response.status === 403) {
-          resultOutput.className = 'error';
-          resultOutput.innerHTML = `⛔ Сессия недействительна или истекла.`;
-        } else {
-          resultOutput.className = 'error';
-          resultOutput.innerHTML = `❌ Ошибка сервера: ${data.error || 'Неизвестная ошибка.'}`;
-        }
-      } catch (error) {
+        await initSession(userId);
+      } catch {
         resultOutput.className = 'error';
-        resultOutput.innerHTML = '❌ Ошибка сети.';
-      } finally {
-        searchButton.disabled = false;
+        resultOutput.innerHTML = 'Не удалось возобновить сессию.';
+        return;
       }
-    });
-  </script>
-</body>
-</html>
+    }
+
+    resultOutput.className = 'result';
+    resultOutput.innerHTML = '⏳ Поиск...';
+    searchButton.disabled = true;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/search`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query,
+          telegram_user_id: userId,
+          session_token: sessionToken
+        })
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        resultOutput.className = 'result';
+        resultOutput.innerHTML = data.result || 'Нет данных.';
+      } else if (response.status === 403) {
+        resultOutput.className = 'error';
+        resultOutput.innerHTML = '⏰ Сессия истекла. Перезапуск...';
+        localStorage.removeItem("session_token");
+        localStorage.removeItem("session_created");
+        await initSession(userId);
+        resultOutput.innerHTML = '♻️ Сессия обновлена. Повторите запрос.';
+      } else {
+        resultOutput.className = 'error';
+        resultOutput.innerHTML = `❌ ${data.error || 'Ошибка сервера.'}`;
+      }
+    } catch (error) {
+      resultOutput.className = 'error';
+      resultOutput.innerHTML = '⚠️ Ошибка сети.';
+    } finally {
+      searchButton.disabled = false;
+    }
+  });
+</script>
+
