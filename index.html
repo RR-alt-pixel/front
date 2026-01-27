@@ -156,13 +156,14 @@
       white-space: pre-wrap;
       background-color: var(--tg-theme-secondary-bg-color, var(--secondary-bg));
       border-radius: 10px;
-      padding: 15px;
+      padding: 10px;
       margin-top: 15px;
       text-align: left;
       animation: slideInUp 0.4s ease-out;
       box-shadow: 0 2px 10px var(--shadow);
       transform-origin: top;
       position: relative;
+      font-size: 14px;
     }
     
     .error {
@@ -245,11 +246,12 @@
     }
     
     .result-field {
-      margin-bottom: 8px;
-      padding: 8px;
+      margin-bottom: 4px;
+      padding: 4px 8px;
       background: rgba(0, 188, 212, 0.05);
       border-radius: 6px;
-      line-height: 1.6;
+      line-height: 1.4;
+      font-size: 15px;
     }
     
     #searchScreen {
@@ -402,7 +404,7 @@
 
   <!-- Экран 1: старт -->
   <div id="startScreen" class="screen">
-    <h1>⚡ 2026</h1>
+    <h1>⚡ HOGWARTS</h1>
     <p>Нажмите, чтобы начать проверку доступа.</p>
     <button id="startButton">НАЧАТЬ</button>
     <div class="progress-bar" id="startProgress">
@@ -413,7 +415,7 @@
 
   <!-- Экран 2: поиск -->
   <div id="searchScreen" class="screen">
-    <h1>🔍 2026</h1>
+    <h1>🔍 HOGWARTS</h1>
     <input type="text" id="queryInput" placeholder="Введите ИИН, телефон или ФИО">
     <button id="searchButton">
       <span id="searchButtonText">ИСКАТЬ</span>
@@ -539,7 +541,7 @@
     // Простое форматирование с маленькой кнопкой справа вверху
     const lines = text.split('\n');
     let formatted = '<button class="copy-icon-btn" id="copyIconBtn" onclick="copyAllResults()" title="Скопировать">📋</button>';
-    formatted += '<div style="text-align: left; padding-top: 10px;">';
+    formatted += '<div style="text-align: left;">';
     
     lines.forEach(line => {
       if (line.trim()) {
