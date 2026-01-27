@@ -6,6 +6,10 @@
   <title>2026</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+    
     body {
       font-family: 'Segoe UI', Tahoma, sans-serif;
       background-color: var(--tg-theme-bg-color);
@@ -13,72 +17,257 @@
       margin: 0;
       padding: 20px;
       text-align: center;
+      overflow-x: hidden;
     }
+    
     h1 {
       margin-bottom: 20px;
       color: var(--tg-theme-link-color, #00bcd4);
-      font-size: 28px;
-      letter-spacing: 1px;
+      font-size: 32px;
+      letter-spacing: 2px;
+      animation: fadeInDown 0.8s ease-out;
+      text-shadow: 0 2px 10px rgba(0, 188, 212, 0.3);
     }
+    
+    p {
+      animation: fadeIn 1s ease-out 0.3s both;
+      font-size: 16px;
+      opacity: 0.8;
+    }
+    
     button {
       width: 100%;
-      padding: 12px;
-      background-color: var(--tg-theme-button-color);
+      padding: 14px;
+      background: linear-gradient(135deg, var(--tg-theme-button-color) 0%, var(--tg-theme-link-color, #00bcd4) 100%);
       color: var(--tg-theme-button-text-color);
       border: none;
-      border-radius: 8px;
+      border-radius: 12px;
       cursor: pointer;
       font-size: 16px;
+      font-weight: 600;
       margin-top: 10px;
-      transition: 0.2s;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     }
+    
+    button::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+    
+    button:active::before {
+      width: 300px;
+      height: 300px;
+    }
+    
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+    
     button:disabled {
       opacity: 0.6;
       cursor: not-allowed;
+      transform: none;
     }
+    
     input {
       width: 100%;
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid var(--tg-theme-hint-color);
+      padding: 12px;
+      border-radius: 10px;
+      border: 2px solid transparent;
       background-color: var(--tg-theme-secondary-bg-color);
       color: var(--tg-theme-text-color);
       margin-bottom: 10px;
       font-size: 16px;
+      transition: all 0.3s ease;
+      animation: slideInUp 0.5s ease-out;
     }
+    
+    input:focus {
+      outline: none;
+      border-color: var(--tg-theme-link-color, #00bcd4);
+      box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.1);
+      transform: scale(1.02);
+    }
+    
     .result, .error {
       white-space: pre-wrap;
       background-color: var(--tg-theme-secondary-bg-color);
-      border-radius: 6px;
-      padding: 10px;
-      margin-top: 10px;
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 15px;
       text-align: left;
+      animation: slideInUp 0.4s ease-out;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      transform-origin: top;
     }
+    
     .error {
-      border: 1px solid var(--tg-theme-destructive-text-color);
+      border: 2px solid var(--tg-theme-destructive-text-color);
       color: var(--tg-theme-destructive-text-color);
+      animation: shake 0.5s ease-out, slideInUp 0.4s ease-out;
     }
+    
     #searchScreen {
       display: none;
-      transition: opacity 0.3s ease;
+    }
+    
+    .screen {
+      animation: fadeIn 0.5s ease-out;
+    }
+    
+    .screen.fade-out {
+      animation: fadeOut 0.3s ease-out forwards;
+    }
+    
+    /* Loader/Spinner */
+    .loader {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-left: 10px;
+      vertical-align: middle;
+    }
+    
+    .pulse {
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    
+    /* Анимации */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    
+    @keyframes fadeOut {
+      from {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+      }
+    }
+    
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+      20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 0.7;
+        transform: scale(0.95);
+      }
+    }
+    
+    /* Эффект появления результата */
+    .result-item {
+      animation: slideInUp 0.3s ease-out;
+      margin-bottom: 8px;
+    }
+    
+    /* Прогресс бар */
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background: rgba(0, 188, 212, 0.2);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 10px;
+      display: none;
+    }
+    
+    .progress-bar.active {
+      display: block;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--tg-theme-link-color, #00bcd4), var(--tg-theme-button-color));
+      border-radius: 2px;
+      animation: progress 2s ease-in-out infinite;
+    }
+    
+    @keyframes progress {
+      0% { width: 0%; }
+      50% { width: 70%; }
+      100% { width: 100%; }
     }
   </style>
 </head>
 <body>
 
   <!-- Экран 1: старт -->
-  <div id="startScreen">
-    <h1>HOGWARTS</h1>
+  <div id="startScreen" class="screen">
+    <h1>⚡ HOGWARTS</h1>
     <p>Нажмите, чтобы начать проверку доступа.</p>
     <button id="startButton">НАЧАТЬ</button>
+    <div class="progress-bar" id="startProgress">
+      <div class="progress-fill"></div>
+    </div>
     <div id="startMessage" class="result" style="display:none;"></div>
   </div>
 
   <!-- Экран 2: поиск -->
-  <div id="searchScreen">
-    <h1>HOGWARTS</h1>
+  <div id="searchScreen" class="screen">
+    <h1>🔍 HOGWARTS</h1>
     <input type="text" id="queryInput" placeholder="Введите ИИН, телефон или ФИО">
-    <button id="searchButton">ИСКАТЬ</button>
+    <button id="searchButton">
+      <span id="searchButtonText">ИСКАТЬ</span>
+    </button>
+    <div class="progress-bar" id="searchProgress">
+      <div class="progress-fill"></div>
+    </div>
     <div id="resultOutput" class="result">Здесь появится результат.</div>
   </div>
 
@@ -90,14 +279,27 @@
   const searchScreen = document.getElementById('searchScreen');
   const startButton = document.getElementById('startButton');
   const startMessage = document.getElementById('startMessage');
+  const startProgress = document.getElementById('startProgress');
   const searchButton = document.getElementById('searchButton');
+  const searchButtonText = document.getElementById('searchButtonText');
   const queryInput = document.getElementById('queryInput');
   const resultOutput = document.getElementById('resultOutput');
+  const searchProgress = document.getElementById('searchProgress');
 
   // Telegram init
   if (window.Telegram && window.Telegram.WebApp) {
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
+  }
+
+  // Функция переключения экранов с анимацией
+  function switchScreen(from, to) {
+    from.classList.add('fade-out');
+    setTimeout(() => {
+      from.style.display = 'none';
+      from.classList.remove('fade-out');
+      to.style.display = 'block';
+    }, 300);
   }
 
   // === Функция запуска сессии с кешированием ===
@@ -131,6 +333,7 @@
   // === Этап 1: Проверка доступа и запуск ===
   startButton.addEventListener('click', async () => {
     startButton.disabled = true;
+    startProgress.classList.add('active');
     startMessage.style.display = 'block';
     startMessage.className = 'result';
     startMessage.innerHTML = '🔍 Проверка доступа...';
@@ -143,20 +346,26 @@
     }
 
     if (!userId) {
+      startProgress.classList.remove('active');
       startMessage.className = 'error';
-      startMessage.innerHTML = 'Ошибка: не удалось получить Telegram ID.';
+      startMessage.innerHTML = '❌ Ошибка: не удалось получить Telegram ID.';
       startButton.disabled = false;
       return;
     }
 
     try {
       await initSession(userId);
-      startMessage.innerHTML = '✅ Доступ подтверждён.';
+      startProgress.classList.remove('active');
+      startMessage.className = 'result';
+      startMessage.innerHTML = '✅ Доступ подтверждён. Переход...';
+      
       setTimeout(() => {
-        startScreen.style.display = 'none';
-        searchScreen.style.display = 'block';
+        switchScreen(startScreen, searchScreen);
+        // Фокус на поле ввода
+        setTimeout(() => queryInput.focus(), 400);
       }, 700);
     } catch (err) {
+      startProgress.classList.remove('active');
       startMessage.className = 'error';
       startMessage.innerHTML = '⛔ ' + err.message;
     } finally {
@@ -169,14 +378,14 @@
     const query = queryInput.value.trim();
     if (!query) {
       resultOutput.className = 'error';
-      resultOutput.innerHTML = 'Введите запрос.';
+      resultOutput.innerHTML = '⚠️ Введите запрос.';
       return;
     }
 
     const userId = Telegram?.WebApp?.initDataUnsafe?.user?.id;
     if (!userId) {
       resultOutput.className = 'error';
-      resultOutput.innerHTML = 'Ошибка Telegram ID.';
+      resultOutput.innerHTML = '❌ Ошибка Telegram ID.';
       return;
     }
 
@@ -186,14 +395,16 @@
         await initSession(userId);
       } catch {
         resultOutput.className = 'error';
-        resultOutput.innerHTML = 'Не удалось возобновить сессию.';
+        resultOutput.innerHTML = '❌ Не удалось возобновить сессию.';
         return;
       }
     }
 
-    resultOutput.className = 'result';
+    resultOutput.className = 'result pulse';
     resultOutput.innerHTML = '⏳ Поиск...';
     searchButton.disabled = true;
+    searchProgress.classList.add('active');
+    searchButtonText.innerHTML = 'ЗАГРУЗКА<span class="loader"></span>';
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/search`, {
@@ -207,6 +418,9 @@
       });
       const data = await response.json();
 
+      searchProgress.classList.remove('active');
+      resultOutput.classList.remove('pulse');
+
       if (response.ok) {
         resultOutput.className = 'result';
         resultOutput.innerHTML = data.result || 'Нет данных.';
@@ -215,18 +429,36 @@
         resultOutput.innerHTML = '⏰ Сессия истекла. Перезапуск...';
         localStorage.removeItem("session_token");
         localStorage.removeItem("session_created");
-        await initSession(userId);
-        resultOutput.innerHTML = '♻️ Сессия обновлена. Повторите запрос.';
+        
+        try {
+          await initSession(userId);
+          resultOutput.className = 'result';
+          resultOutput.innerHTML = '♻️ Сессия обновлена. Повторите запрос.';
+        } catch {
+          resultOutput.className = 'error';
+          resultOutput.innerHTML = '❌ Не удалось обновить сессию.';
+        }
       } else {
         resultOutput.className = 'error';
         resultOutput.innerHTML = `❌ ${data.error || 'Ошибка сервера.'}`;
       }
     } catch (error) {
+      searchProgress.classList.remove('active');
+      resultOutput.classList.remove('pulse');
       resultOutput.className = 'error';
-      resultOutput.innerHTML = '⚠️ Ошибка сети.';
+      resultOutput.innerHTML = '⚠️ Ошибка сети. Проверьте подключение.';
     } finally {
       searchButton.disabled = false;
+      searchButtonText.innerHTML = 'ИСКАТЬ';
+    }
+  });
+
+  // Enter для поиска
+  queryInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && !searchButton.disabled) {
+      searchButton.click();
     }
   });
 </script>
-
+</body>
+</html>
