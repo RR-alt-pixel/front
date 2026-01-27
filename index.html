@@ -10,19 +10,42 @@
       box-sizing: border-box;
     }
     
+    :root {
+      --bg-color: #ffffff;
+      --text-color: #000000;
+      --secondary-bg: #f5f5f5;
+      --link-color: #00bcd4;
+      --button-bg: #00bcd4;
+      --button-text: #ffffff;
+      --border-color: #e0e0e0;
+      --shadow: rgba(0, 0, 0, 0.1);
+    }
+    
+    [data-theme="dark"] {
+      --bg-color: #1a1a1a;
+      --text-color: #ffffff;
+      --secondary-bg: #2d2d2d;
+      --link-color: #00e5ff;
+      --button-bg: #00bcd4;
+      --button-text: #ffffff;
+      --border-color: #404040;
+      --shadow: rgba(0, 0, 0, 0.3);
+    }
+    
     body {
       font-family: 'Segoe UI', Tahoma, sans-serif;
-      background-color: var(--tg-theme-bg-color);
-      color: var(--tg-theme-text-color);
+      background-color: var(--tg-theme-bg-color, var(--bg-color));
+      color: var(--tg-theme-text-color, var(--text-color));
       margin: 0;
       padding: 20px;
       text-align: center;
       overflow-x: hidden;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
     
     h1 {
       margin-bottom: 20px;
-      color: var(--tg-theme-link-color, #00bcd4);
+      color: var(--tg-theme-link-color, var(--link-color));
       font-size: 32px;
       letter-spacing: 2px;
       animation: fadeInDown 0.8s ease-out;
@@ -35,11 +58,39 @@
       opacity: 0.8;
     }
     
+    /* Переключатель темы */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      cursor: pointer;
+      font-size: 24px;
+      background: var(--secondary-bg);
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 10px var(--shadow);
+      transition: all 0.3s ease;
+      animation: fadeIn 0.5s ease-out;
+    }
+    
+    .theme-toggle:hover {
+      transform: scale(1.1) rotate(20deg);
+    }
+    
+    .theme-toggle:active {
+      transform: scale(0.95);
+    }
+    
     button {
       width: 100%;
       padding: 14px;
-      background: linear-gradient(135deg, var(--tg-theme-button-color) 0%, var(--tg-theme-link-color, #00bcd4) 100%);
-      color: var(--tg-theme-button-text-color);
+      background: linear-gradient(135deg, var(--tg-theme-button-color, var(--button-bg)) 0%, var(--tg-theme-link-color, var(--link-color)) 100%);
+      color: var(--tg-theme-button-text-color, var(--button-text));
       border: none;
       border-radius: 12px;
       cursor: pointer;
@@ -49,7 +100,7 @@
       transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 15px var(--shadow);
     }
     
     button::before {
@@ -72,7 +123,7 @@
     
     button:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 6px 20px var(--shadow);
     }
     
     button:disabled {
@@ -86,8 +137,8 @@
       padding: 12px;
       border-radius: 10px;
       border: 2px solid transparent;
-      background-color: var(--tg-theme-secondary-bg-color);
-      color: var(--tg-theme-text-color);
+      background-color: var(--tg-theme-secondary-bg-color, var(--secondary-bg));
+      color: var(--tg-theme-text-color, var(--text-color));
       margin-bottom: 10px;
       font-size: 16px;
       transition: all 0.3s ease;
@@ -96,27 +147,109 @@
     
     input:focus {
       outline: none;
-      border-color: var(--tg-theme-link-color, #00bcd4);
+      border-color: var(--tg-theme-link-color, var(--link-color));
       box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.1);
       transform: scale(1.02);
     }
     
     .result, .error {
       white-space: pre-wrap;
-      background-color: var(--tg-theme-secondary-bg-color);
+      background-color: var(--tg-theme-secondary-bg-color, var(--secondary-bg));
       border-radius: 10px;
       padding: 15px;
       margin-top: 15px;
       text-align: left;
       animation: slideInUp 0.4s ease-out;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 10px var(--shadow);
       transform-origin: top;
+      position: relative;
     }
     
     .error {
-      border: 2px solid var(--tg-theme-destructive-text-color);
-      color: var(--tg-theme-destructive-text-color);
+      border: 2px solid var(--tg-theme-destructive-text-color, #ff5252);
+      color: var(--tg-theme-destructive-text-color, #ff5252);
       animation: shake 0.5s ease-out, slideInUp 0.4s ease-out;
+    }
+    
+    /* Скелетон загрузка */
+    .skeleton {
+      background: var(--secondary-bg);
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 15px;
+      animation: slideInUp 0.4s ease-out;
+    }
+    
+    .skeleton-line {
+      height: 20px;
+      background: linear-gradient(90deg, 
+        var(--border-color) 25%, 
+        var(--secondary-bg) 50%, 
+        var(--border-color) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 4px;
+      margin-bottom: 12px;
+    }
+    
+    .skeleton-line:last-child {
+      margin-bottom: 0;
+    }
+    
+    .skeleton-line.short {
+      width: 60%;
+    }
+    
+    .skeleton-line.medium {
+      width: 80%;
+    }
+    
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    
+    /* Кнопки копирования */
+    .copy-icon-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--link-color);
+      color: white;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(0, 188, 212, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+    
+    .copy-icon-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(0, 188, 212, 0.5);
+    }
+    
+    .copy-icon-btn:active {
+      transform: scale(0.95);
+    }
+    
+    .copy-icon-btn.copied {
+      background: #4caf50;
+      animation: pulse 0.3s ease;
+    }
+    
+    .result-field {
+      margin-bottom: 8px;
+      padding: 8px;
+      background: rgba(0, 188, 212, 0.05);
+      border-radius: 6px;
+      line-height: 1.6;
     }
     
     #searchScreen {
@@ -210,12 +343,6 @@
       }
     }
     
-    /* Эффект появления результата */
-    .result-item {
-      animation: slideInUp 0.3s ease-out;
-      margin-bottom: 8px;
-    }
-    
     /* Прогресс бар */
     .progress-bar {
       width: 100%;
@@ -233,7 +360,7 @@
     
     .progress-fill {
       height: 100%;
-      background: linear-gradient(90deg, var(--tg-theme-link-color, #00bcd4), var(--tg-theme-button-color));
+      background: linear-gradient(90deg, var(--tg-theme-link-color, var(--link-color)), var(--tg-theme-button-color, var(--button-bg)));
       border-radius: 2px;
       animation: progress 2s ease-in-out infinite;
     }
@@ -243,9 +370,35 @@
       50% { width: 70%; }
       100% { width: 100%; }
     }
+    
+    /* Toast уведомление */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--link-color);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px var(--shadow);
+      z-index: 1001;
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+    
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
+
+  <!-- Переключатель темы -->
+  <div class="theme-toggle" id="themeToggle" title="Сменить тему">
+    <span id="themeIcon">🌙</span>
+  </div>
 
   <!-- Экран 1: старт -->
   <div id="startScreen" class="screen">
@@ -271,6 +424,9 @@
     <div id="resultOutput" class="result">Здесь появится результат.</div>
   </div>
 
+  <!-- Toast уведомление -->
+  <div class="toast" id="toast"></div>
+
   <script>
   const API_BASE_URL = "https://test-2-tkqp.onrender.com";
   let sessionToken = null;
@@ -285,11 +441,115 @@
   const queryInput = document.getElementById('queryInput');
   const resultOutput = document.getElementById('resultOutput');
   const searchProgress = document.getElementById('searchProgress');
+  const themeToggle = document.getElementById('themeToggle');
+  const themeIcon = document.getElementById('themeIcon');
+  const toast = document.getElementById('toast');
 
   // Telegram init
   if (window.Telegram && window.Telegram.WebApp) {
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
+  }
+
+  // === ТЕМА ===
+  function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+  }
+
+  // Загрузка сохраненной темы
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  setTheme(savedTheme);
+
+  themeToggle.addEventListener('click', () => {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    
+    // Haptic feedback
+    if (window.Telegram?.WebApp?.HapticFeedback) {
+      Telegram.WebApp.HapticFeedback.impactOccurred('light');
+    }
+  });
+
+  // === TOAST ===
+  function showToast(message, duration = 2000) {
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, duration);
+  }
+
+  // === КОПИРОВАНИЕ ===
+  function copyAllResults() {
+    const resultDiv = document.getElementById('resultOutput');
+    // Получаем весь текст без HTML тегов
+    let text = resultDiv.innerText || resultDiv.textContent;
+    
+    // Убираем эмодзи (все Unicode символы эмодзи)
+    text = text.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
+    // Убираем множественные пробелы и переносы
+    text = text.replace(/\n\s*\n/g, '\n');
+    
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        const copyBtn = document.getElementById('copyIconBtn');
+        const originalHTML = copyBtn.innerHTML;
+        copyBtn.innerHTML = '✓';
+        copyBtn.classList.add('copied');
+        showToast('Скопировано!');
+        
+        // Haptic feedback
+        if (window.Telegram?.WebApp?.HapticFeedback) {
+          Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+        }
+        
+        setTimeout(() => {
+          copyBtn.innerHTML = originalHTML;
+          copyBtn.classList.remove('copied');
+        }, 2000);
+      }).catch(() => {
+        showToast('Ошибка копирования');
+      });
+    } else {
+      showToast('Копирование не поддерживается');
+    }
+  }
+
+  // Делаем функцию глобальной
+  window.copyAllResults = copyAllResults;
+
+  // === СКЕЛЕТОН ===
+  function showSkeleton() {
+    resultOutput.className = 'skeleton';
+    resultOutput.innerHTML = `
+      <div class="skeleton-line"></div>
+      <div class="skeleton-line medium"></div>
+      <div class="skeleton-line short"></div>
+      <div class="skeleton-line"></div>
+      <div class="skeleton-line medium"></div>
+      <div class="skeleton-line short"></div>
+    `;
+  }
+
+  // === ФОРМАТИРОВАНИЕ РЕЗУЛЬТАТА ===
+  function formatResult(text) {
+    // Простое форматирование с маленькой кнопкой справа вверху
+    const lines = text.split('\n');
+    let formatted = '<button class="copy-icon-btn" id="copyIconBtn" onclick="copyAllResults()" title="Скопировать">📋</button>';
+    formatted += '<div style="text-align: left; padding-top: 10px;">';
+    
+    lines.forEach(line => {
+      if (line.trim()) {
+        formatted += `<div class="result-field">${line}</div>`;
+      }
+    });
+    
+    formatted += '</div>';
+    
+    return formatted;
   }
 
   // Функция переключения экранов с анимацией
@@ -350,6 +610,10 @@
       startMessage.className = 'error';
       startMessage.innerHTML = '❌ Ошибка: не удалось получить Telegram ID.';
       startButton.disabled = false;
+      
+      if (window.Telegram?.WebApp?.HapticFeedback) {
+        Telegram.WebApp.HapticFeedback.notificationOccurred('error');
+      }
       return;
     }
 
@@ -358,6 +622,10 @@
       startProgress.classList.remove('active');
       startMessage.className = 'result';
       startMessage.innerHTML = '✅ Доступ подтверждён. Переход...';
+      
+      if (window.Telegram?.WebApp?.HapticFeedback) {
+        Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+      }
       
       setTimeout(() => {
         switchScreen(startScreen, searchScreen);
@@ -368,6 +636,10 @@
       startProgress.classList.remove('active');
       startMessage.className = 'error';
       startMessage.innerHTML = '⛔ ' + err.message;
+      
+      if (window.Telegram?.WebApp?.HapticFeedback) {
+        Telegram.WebApp.HapticFeedback.notificationOccurred('error');
+      }
     } finally {
       startButton.disabled = false;
     }
@@ -379,6 +651,10 @@
     if (!query) {
       resultOutput.className = 'error';
       resultOutput.innerHTML = '⚠️ Введите запрос.';
+      
+      if (window.Telegram?.WebApp?.HapticFeedback) {
+        Telegram.WebApp.HapticFeedback.notificationOccurred('warning');
+      }
       return;
     }
 
@@ -386,6 +662,10 @@
     if (!userId) {
       resultOutput.className = 'error';
       resultOutput.innerHTML = '❌ Ошибка Telegram ID.';
+      
+      if (window.Telegram?.WebApp?.HapticFeedback) {
+        Telegram.WebApp.HapticFeedback.notificationOccurred('error');
+      }
       return;
     }
 
@@ -400,8 +680,8 @@
       }
     }
 
-    resultOutput.className = 'result pulse';
-    resultOutput.innerHTML = '⏳ Поиск...';
+    // Показываем скелетон
+    showSkeleton();
     searchButton.disabled = true;
     searchProgress.classList.add('active');
     searchButtonText.innerHTML = 'ЗАГРУЗКА<span class="loader"></span>';
@@ -419,11 +699,14 @@
       const data = await response.json();
 
       searchProgress.classList.remove('active');
-      resultOutput.classList.remove('pulse');
 
       if (response.ok) {
         resultOutput.className = 'result';
-        resultOutput.innerHTML = data.result || 'Нет данных.';
+        resultOutput.innerHTML = formatResult(data.result || 'Нет данных.');
+        
+        if (window.Telegram?.WebApp?.HapticFeedback) {
+          Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+        }
       } else if (response.status === 403) {
         resultOutput.className = 'error';
         resultOutput.innerHTML = '⏰ Сессия истекла. Перезапуск...';
@@ -438,15 +721,26 @@
           resultOutput.className = 'error';
           resultOutput.innerHTML = '❌ Не удалось обновить сессию.';
         }
+        
+        if (window.Telegram?.WebApp?.HapticFeedback) {
+          Telegram.WebApp.HapticFeedback.notificationOccurred('error');
+        }
       } else {
         resultOutput.className = 'error';
         resultOutput.innerHTML = `❌ ${data.error || 'Ошибка сервера.'}`;
+        
+        if (window.Telegram?.WebApp?.HapticFeedback) {
+          Telegram.WebApp.HapticFeedback.notificationOccurred('error');
+        }
       }
     } catch (error) {
       searchProgress.classList.remove('active');
-      resultOutput.classList.remove('pulse');
       resultOutput.className = 'error';
       resultOutput.innerHTML = '⚠️ Ошибка сети. Проверьте подключение.';
+      
+      if (window.Telegram?.WebApp?.HapticFeedback) {
+        Telegram.WebApp.HapticFeedback.notificationOccurred('error');
+      }
     } finally {
       searchButton.disabled = false;
       searchButtonText.innerHTML = 'ИСКАТЬ';
