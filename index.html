@@ -247,15 +247,6 @@
       animation: pulse 0.3s ease;
     }
     
-    .result-field {
-      margin-bottom: 4px;
-      padding: 4px 8px;
-      background: rgba(0, 188, 212, 0.05);
-      border-radius: 6px;
-      line-height: 1.4;
-      font-size: 15px;
-    }
-    
     #searchScreen {
       display: none;
     }
@@ -464,7 +455,6 @@
     const resultDiv = document.getElementById('resultOutput');
     let text = resultDiv.innerText || resultDiv.textContent;
     
-    // Удаляем кнопку копирования из текста
     text = text.replace('📋', '').trim();
     
     if (navigator.clipboard) {
