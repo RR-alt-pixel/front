@@ -165,6 +165,11 @@
       font-size: 14px;
     }
     
+    .result b {
+      font-weight: 600;
+      color: var(--tg-theme-link-color, var(--link-color));
+    }
+    
     .error {
       border: 2px solid var(--tg-theme-destructive-text-color, #ff5252);
       color: var(--tg-theme-destructive-text-color, #ff5252);
@@ -459,8 +464,8 @@
     const resultDiv = document.getElementById('resultOutput');
     let text = resultDiv.innerText || resultDiv.textContent;
     
-    text = text.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
-    text = text.replace(/\n\s*\n/g, '\n');
+    // Удаляем кнопку копирования из текста
+    text = text.replace('📋', '').trim();
     
     if (navigator.clipboard) {
       navigator.clipboard.writeText(text).then(() => {
@@ -501,15 +506,11 @@
   }
 
   function formatResult(text) {
-    const lines = text.split('\n');
     let formatted = '<button class="copy-icon-btn" id="copyIconBtn" onclick="copyAllResults()" title="Скопировать">📋</button>';
-    formatted += '<div style="text-align: left;">';
+    formatted += '<div style="text-align: left; white-space: pre-wrap;">';
     
-    lines.forEach(line => {
-      if (line.trim()) {
-        formatted += `<div class="result-field">${line}</div>`;
-      }
-    });
+    // Заменяем переносы строк на <br> для HTML
+    formatted += text.replace(/\n/g, '<br>');
     
     formatted += '</div>';
     
@@ -662,13 +663,19 @@
         signal: abortController.signal
       });
       
+      console.log('Response status:', response.status);
       const data = await response.json();
+      console.log('Response data:', data);
 
       searchProgress.classList.remove('active');
 
       if (response.ok) {
         resultOutput.className = 'result';
-        resultOutput.innerHTML = formatResult(data.result || 'Нет данных.');
+        if (data.result) {
+          resultOutput.innerHTML = formatResult(data.result);
+        } else {
+          resultOutput.innerHTML = '⚠️ Нет данных в ответе от сервера.';
+        }
         
         if (window.Telegram?.WebApp?.HapticFeedback) {
           Telegram.WebApp.HapticFeedback.notificationOccurred('success');
